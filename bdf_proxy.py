@@ -332,7 +332,13 @@ class ProxyMaster(controller.Master):
         tmp_file.write(aZipFile)
         tmp_file.seek(0)
 
-        zippyfile = zipfile.ZipFile(tmp_file.name, 'r')
+        # sometimes zip files aren't actually zip files, in which case zipfile.ZipFile will throw BadZipFile
+        try:
+            zippyfile = zipfile.ZipFile(tmp_file.name, 'r')
+        except BadZipFile as e:
+            EnhancedOutput.print_warning("zipfile.ZipFile() returned BadZipFile error. Returning original archive")
+            tmp_file.close()
+            return aZipFile
 
         # encryption test
         try:
